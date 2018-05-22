@@ -9,7 +9,7 @@
 }
 
 html, body {
-  background: #2E706C;
+  background: white;
   text-align: center;
   width: 100%;
   height: 100%;
@@ -19,21 +19,15 @@ html {
   display: table;
 }
 
-body {
-  display: table-cell;
-  vertical-align: middle;
-}
-
 #quiz {
-  margin: -44px 50px 0px;
+  margin: 10px 25px 0px 25px;
   position: relative;
-  width: calc(100% - 100px);
 }
 
 #quiz h1 {
   color: #FAFAFA;
   font-weight: 600;
-  font-size: 36px;
+  font-size: 50px;
   text-transform: uppercase;
   text-align: left;
   line-height: 44px;
@@ -41,11 +35,11 @@ body {
 
 #quiz button {
   float: right;
-  margin: 8px 0px 0px 8px;
-  padding: 4px 8px;
+  margin: 18px 0px 0px 18px;
+  padding: 15px;
   background: #9ACFCC;
   color: #00403C;
-  font-size: 14px;
+  font-size: 34px;
   cursor: pointer;
   outline: none;
 }
@@ -63,14 +57,14 @@ body {
 }
 
 #question {
-  padding: 20px;
-  background: #FAFAFA;
+  padding: 15px;
+  background: #FFEFDF;
 }
 
 #question h2 {
-  margin-bottom: 16px;
+  margin-bottom: 30px;
   font-weight: 600;
-  font-size: 20px;
+  font-size: 50px;
 }
 
 #question input[type=radio] {
@@ -79,11 +73,12 @@ body {
 
 #question label {
   display: inline-block;
-  margin: 4px;
-  padding: 8px;
+  margin: 6px;
+  padding: 15px;
+  font-size: 32px;
   background: #FAE3BB;
-  color: #4C3000;
-  width: calc(50% - 8px);
+  color: #2C1000;
+  width: calc(100% - 8px);
   min-width: 100px;
   cursor: pointer;
 }
@@ -126,4 +121,10 @@ body {
   color: #00403C;
   font-weight: 600;
   font-size: 20px;
+}
+
+#instruction{
+	margin: 20px 5px 20px 5px;
+	font-size: 26px;
+	text-align: center;
 }

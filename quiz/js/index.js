@@ -1,29 +1,4 @@
 // Array of all the questions and choices to populate the questions. This might be saved in some JSON file or a database and we would have to read the data in.
-var all_questions = [{
-  question_string: "What color is the sky?",
-  choices: {
-    correct: "Blue",
-    wrong: ["Pink", "Orange", "Green"]
-  }
-}, {
-  question_string: "Which season is the hottest?",
-  choices: {
-    correct: "Summer",
-    wrong: ["Winter", "Autumn", "Spring"]
-  }
-}, {
-  question_string: "How many wheels are there on a tricycle?",
-  choices: {
-    correct: "Three",
-    wrong: ["One", "Two", "Four"]
-  }
-}, {
-  question_string: 'Who is the main character of Harry Potter?',
-  choices: {
-    correct: "Harry Potter",
-    wrong: ["Hermione Granger", "Ron Weasley", "Voldemort"]
-  }
-}];
 
 // An object for a Quiz, which will contain Question objects.
 var Quiz = function(quiz_name) {
@@ -119,6 +94,8 @@ Quiz.prototype.render = function(container) {
     $('#quiz-results-score').html('You got <b>' + score + '/' + self.questions.length + '</b> questions correct.');
     $('#quiz-results').slideDown();
     $('#quiz button').slideUp();
+	
+	endFun();
   });
   
   // Add a listener on the questions container to listen for user select changes. This is for determining whether we can submit answers or not.
@@ -211,10 +188,34 @@ Question.prototype.render = function(container) {
   });
 }
 
+function endFun() {
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/game/end', true);
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send(JSON.stringify({result: 0.57, group: "1", nick: "john", age: 5}));
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == XMLHttpRequest.DONE) {
+			<!--window.alert(xhr.responseText);-->
+			window.location.replace(xhr.responseText);
+		}
+	}
+}
+
 // "Main method" which will create all the objects and render the Quiz.
 $(document).ready(function() {
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', '/quiz/config', true);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == XMLHttpRequest.DONE) {
+			var json = xhr.responseText;
+			obj = JSON.parse(json);
+			console.log(obj)
+		}
+	}
+	xhr.send(null);
+	
   // Create an instance of the Quiz object
-  var quiz = new Quiz('My Quiz');
+  var quiz = new Quiz('');
   
   // Create Question objects from all_questions and add them to the Quiz object
   for (var i = 0; i < all_questions.length; i++) {

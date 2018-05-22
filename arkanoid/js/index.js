@@ -3,16 +3,38 @@ var c = canvas.getContext("2d");
 var out = document.getElementById("out");
 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
-var player = new Player(300,380,80,15);
-var ball = new Ball(200,200,5,Math.floor(Math.random()*4+4),Math.floor(Math.random()*4+4),"red");
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/arkanoid/config', true);
+xhr.onreadystatechange = function() {
+	if (xhr.readyState == XMLHttpRequest.DONE) {
+		var json = xhr.responseText;
+		obj = JSON.parse(json);
+		console.log(obj)
+	}
+}
+xhr.send(null);
+
+window.addEventListener("touchstart", handleTouch, false);
+window.addEventListener("touchmove", handleTouch, false);
+window.addEventListener("touchend", handleEnd, false);
+
+var player = new Player(160,380,80,15);
+var ball = new Ball(200,200,5,5,"red");
 var bricks;
-var dKeyDown = false;
-var aKeyDown = false;
+var touchPosition = -1;
 var gameOver = false;
 var winner = false;
 
 loadMap();
 start();
+
+function handleTouch(evt) {
+	touchPosition = (evt.changedTouches[0].pageX/window.innerWidth)*400;
+}
+
+function handleEnd(evt) {
+	touchPosition = -1;
+}
 
 function Brick(x,y,width,height,color){
 	this.x = x;
@@ -22,12 +44,13 @@ function Brick(x,y,width,height,color){
 	this.color = color;
 }
 
-function Ball(x,y,r,dx,dy,color){
+function Ball(x,y,r,speed,color){
 	this.x = x;
 	this.y = y;
 	this.r = r;
-	this.dx = dx;
-	this.dy = dy;
+	this.speed = speed;
+	this.dx = Math.random() - 0.5;
+	this.dy = speed;
 	this.color = color;
 }
 
@@ -37,15 +60,15 @@ function Player(x,y,width,height){
 	this.width = width;
 	this.height = height;
 	this.moveSpeedLimit = 10;
-	this.accel = 0.75;
-	this.decel = 0.75;
+	this.accel = 1;
+	this.decel = 2;
 	this.xVel = 0;
 	this.yVel = 0;
-	this.color = "black";
+	this.color = "orange";
 }
 
 function start(){
-	checkKeyboardStatus();
+	movePlayer();
 	checkPlayer_BoundsCollision();
 	checkBall_PlayerCollision();
 	checkBall_BoundsCollision();
@@ -65,6 +88,7 @@ function start(){
 		}
 		out.innerHTML += "<br>";
 		out.innerHTML += "Press R to restart";
+		endFun();
 	}
 		
 }
@@ -72,27 +96,6 @@ function start(){
 function moveBall(){
 	ball.x = ball.x+ball.dx;
 	ball.y = ball.y+ball.dy;
-}
-
-document.onkeydown = function(e){
-	if(e.keyCode === 65){
-		aKeyDown = true;
-	}
-	if(e.keyCode === 68){
-		dKeyDown = true;
-	}
-	if(e.keyCode === 82){
-		if(gameOver) restart();
-	}
-}
-
-document.onkeyup = function(e){
-	if(e.keyCode === 65){
-		aKeyDown = false;
-	}
-	if(e.keyCode === 68){
-		dKeyDown = false;
-	}
 }
 
 function checkBall_BrickCollision(){
@@ -150,19 +153,22 @@ function checkBall_PlayerCollision(){
 	var ay1 = player.y;
 	var ax2 = player.x+player.width;
 	var ay2 = player.y+player.height;
+	var ax = (ax1 + ax2) / 2;
+	var ay = (ay1 + ay2) / 2;
 	var bx1 = ball.x-ball.r;
-	var bx2 = ball.y-ball.r;
+	var by1 = ball.y-ball.r;
 	var bx2 = ball.x+ball.r;
 	var by2 = ball.y+ball.r;
-	if(!(ax2 <= bx1 || bx2 <= ax1 || ay2 <= by1 || by2 <= ay1)){
-		ball.dy = -ball.dy;
+	if(ax2 > bx1 && ax1 < bx2 && ay1 < by2 && ay > by2){
+		ball.dx = 8 * ((ball.x-(ax))/player.width)
+		ball.dy = -Math.sqrt(ball.speed*ball.speed - ball.dx*ball.dx)
 	}
 }
 
-function checkKeyboardStatus(){
-	if(dKeyDown){
+function movePlayer(){
+	if(touchPosition > player.x + player.width/2 + 2){
 		if(player.xVel < player.moveSpeedLimit){
-			player.xVel += player.accel;	
+			player.xVel += player.accel;
 		} else {
 			player.xVel = player.moveSpeedLimit;
 		}
@@ -172,7 +178,7 @@ function checkKeyboardStatus(){
 			if(player.xVel < 0) player.xVel = 0;
 		}
 	}
-	if(aKeyDown){
+	if(touchPosition != -1 && touchPosition < player.x + player.width/2 - 2){
 		if(player.xVel > -player.moveSpeedLimit){
 			player.xVel -= player.accel;	
 		} else {
@@ -287,5 +293,18 @@ function renderBricks(){
 		c.fillStyle = bricks[i].color;
 		c.fillRect(bricks[i].x,bricks[i].y,bricks[i].width,bricks[i].height);
 		c.restore();	
+	}
+}
+
+function endFun() {
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/game/end', true);
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send(JSON.stringify({result: 0.57, group: "1", nick: "john", age: 5}));
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == XMLHttpRequest.DONE) {
+			<!--window.alert(xhr.responseText);-->
+			window.location.replace(xhr.responseText);
+		}
 	}
 }
