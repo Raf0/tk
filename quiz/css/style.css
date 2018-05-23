@@ -67,14 +67,14 @@ html {
   font-size: 50px;
 }
 
-#question input[type=radio] {
+#question input[type=checkbox] {
   display: none;
 }
 
 #question label {
   display: inline-block;
-  margin: 6px;
-  padding: 15px;
+  margin: 5px;
+  padding: 25px;
   font-size: 32px;
   background: #FAE3BB;
   color: #2C1000;
@@ -87,7 +87,7 @@ html {
   background: #EBBB67;
 }
 
-#question input[type=radio]:checked + label {
+#question input[type=checkbox]:checked + label {
   background: #CB8306;
   color: #FAFAFA;
 }

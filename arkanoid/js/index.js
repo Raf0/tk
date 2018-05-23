@@ -4,27 +4,37 @@ var out = document.getElementById("out");
 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
 var xhr = new XMLHttpRequest();
+var age, nick, group, number;
+var points = 0;
+age = Math.random()*30;
 xhr.open('GET', '/arkanoid/config', true);
 xhr.onreadystatechange = function() {
 	if (xhr.readyState == XMLHttpRequest.DONE) {
 		var json = xhr.responseText;
 		obj = JSON.parse(json);
 		console.log(obj)
+		group = obj['group'];
+		nick = obj['nick'];
+		age = obj['age'];
 	}
 }
-xhr.send(null);
+
 
 window.addEventListener("touchstart", handleTouch, false);
 window.addEventListener("touchmove", handleTouch, false);
 window.addEventListener("touchend", handleEnd, false);
 
-var player = new Player(160,380,80,15);
-var ball = new Ball(200,200,5,5,"red");
+
+var player = new Player(160,380,80,25);
+var speed = Math.max(Math.min(5.25, age/4), 1.25) +2;
+
+var ball = new Ball(200,200,5,speed,"red");
 var bricks;
 var touchPosition = -1;
 var gameOver = false;
 var winner = false;
 
+xhr.send(null);
 loadMap();
 start();
 
@@ -120,6 +130,7 @@ function checkBall_BrickCollision(){
 			} else {
 				ball.dy = -ball.dy;
 			}
+			points++;
 			bricks.splice(i,1);
 			return;
 		}
@@ -218,44 +229,52 @@ function renderPlayer(){
 }
 
 function loadMap(){
+	number = Math.max(Math.min(42, 2*age), 10);
 	bricks = [
-		new Brick(50,50,50,10,"blue"),
-		new Brick(101,50,50,10,"blue"),
-		new Brick(152,50,50,10,"blue"),
-		new Brick(203,50,50,10,"blue"),
-		new Brick(254,50,50,10,"blue"),
-		new Brick(305,50,50,10,"blue"), //Row 1
-		new Brick(50,61,50,10,"green"),
-		new Brick(101,61,50,10,"green"),
-		new Brick(152,61,50,10,"green"),
-		new Brick(203,61,50,10,"green"),
-		new Brick(254,61,50,10,"green"),
-		new Brick(305,61,50,10,"green"), //Row 2
-		new Brick(50,72,50,10,"darkcyan"),
-		new Brick(101,72,50,10,"darkcyan"),
-		new Brick(152,72,50,10,"darkcyan"),
-		new Brick(203,72,50,10,"darkcyan"),
-		new Brick(254,72,50,10,"darkcyan"),
-		new Brick(305,72,50,10,"darkcyan"), //Row 3
-		new Brick(50,83,50,10,"coral"),
-		new Brick(101,83,50,10,"coral"),
-		new Brick(152,83,50,10,"coral"),
-		new Brick(203,83,50,10,"coral"),
-		new Brick(254,83,50,10,"coral"),
-		new Brick(305,83,50,10,"coral"), //Row 4
-		new Brick(50,94,50,10,"darkolivegreen"),
-		new Brick(101,94,50,10,"darkolivegreen"),
-		new Brick(152,94,50,10,"darkolivegreen"),
-		new Brick(203,94,50,10,"darkolivegreen"),
-		new Brick(254,94,50,10,"darkolivegreen"),
-		new Brick(305,94,50,10,"darkolivegreen"), //Row 5
-		new Brick(50,105,50,10,"lightsteelblue"),
-		new Brick(101,105,50,10,"lightsteelblue"),
-		new Brick(152,105,50,10,"lightsteelblue"),
-		new Brick(203,105,50,10,"lightsteelblue"),
-		new Brick(254,105,50,10,"lightsteelblue"),
-		new Brick(305,105,50,10,"lightsteelblue")  //Row 6
+		new Brick(50,50,50,15,"blue"),
+		new Brick(101,50,50,15,"blue"),
+		new Brick(152,50,50,15,"blue"),
+		new Brick(203,50,50,15,"blue"),
+		new Brick(254,50,50,15,"blue"),
+		new Brick(305,50,50,15,"blue"), //Row 1
+		new Brick(50,66,50,15,"green"),
+		new Brick(101,66,50,15,"green"),
+		new Brick(152,66,50,15,"green"),
+		new Brick(203,66,50,15,"green"),
+		new Brick(254,66,50,15,"green"),
+		new Brick(305,66,50,15,"green"), //Row 2
+		new Brick(50,82,50,15,"darkcyan"),
+		new Brick(101,82,50,15,"darkcyan"),
+		new Brick(152,82,50,15,"darkcyan"),
+		new Brick(203,82,50,15,"darkcyan"),
+		new Brick(254,82,50,15,"darkcyan"),
+		new Brick(305,82,50,15,"darkcyan"), //Row 3
+		new Brick(50,98,50,15,"coral"),
+		new Brick(101,98,50,15,"coral"),
+		new Brick(152,98,50,15,"coral"),
+		new Brick(203,98,50,15,"coral"),
+		new Brick(254,98,50,15,"coral"),
+		new Brick(305,98,50,15,"coral"), //Row 4
+		new Brick(50,114,50,15,"darkred"),
+		new Brick(101,114,50,15,"darkred"),
+		new Brick(152,114,50,15,"darkred"),
+		new Brick(203,114,50,15,"darkred"),
+		new Brick(254,114,50,15,"darkred"),
+		new Brick(305,114,50,15,"darkred"), //Row 5
+		new Brick(50,130,50,15,"lightsteelblue"),
+		new Brick(101,130,50,15,"lightsteelblue"),
+		new Brick(152,130,50,15,"lightsteelblue"),
+		new Brick(203,130,50,15,"lightsteelblue"),
+		new Brick(254,130,50,15,"lightsteelblue"),
+		new Brick(305,130,50,15,"lightsteelblue"),  //Row 6
+		new Brick(50,146,50,15,"yellow"),
+		new Brick(101,146,50,15,"yellow"),
+		new Brick(152,146,50,15,"yellow"),
+		new Brick(203,146,50,15,"yellow"),
+		new Brick(254,146,50,15,"yellow"),
+		new Brick(305,146,50,15,"yellow")  //Row 7
 	];
+	bricks = bricks.slice(0, number);
 }
 
 function checkWinner(){
@@ -300,7 +319,12 @@ function endFun() {
 	var xhr = new XMLHttpRequest();
 	xhr.open('POST', '/game/end', true);
 	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	xhr.send(JSON.stringify({result: 0.57, group: "1", nick: "john", age: 5}));
+	if(winner == 1)
+		result = 1;
+	else
+		result = points/number * 0.75;
+	console.log({result: result, group: group, nick: nick, age: age})
+	xhr.send(JSON.stringify({result: result, group: group, nick: nick, age: age}));
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == XMLHttpRequest.DONE) {
 			<!--window.alert(xhr.responseText);-->

@@ -1,5 +1,5 @@
 // Array of all the questions and choices to populate the questions. This might be saved in some JSON file or a database and we would have to read the data in.
-
+var age, nick, group, number, percentage;
 // An object for a Quiz, which will contain Question objects.
 var Quiz = function(quiz_name) {
   // Private fields for an instance of a Quiz object.
@@ -72,14 +72,15 @@ Quiz.prototype.render = function(container) {
     // Determine how many questions the user got right
     var score = 0;
     for (var i = 0; i < self.questions.length; i++) {
-      if (self.questions[i].user_choice_index === self.questions[i].correct_choice_index) {
+		console.log(self.questions[i].user_choice_index);
+      if (self.questions[i].user_choice_index.sort().toString() === self.questions[i].correct_choice_indexes.sort().toString()) {
+		 
         score++;
       }
     }
     
     // Display the score with the appropriate message
-    var percentage = score / self.questions.length;
-    console.log(percentage);
+    percentage = score / self.questions.length;
     var message;
     if (percentage === 1) {
       message = 'Great job!'
@@ -112,29 +113,39 @@ Quiz.prototype.render = function(container) {
 }
 
 // An object for a Question, which contains the question, the correct choice, and wrong choices. This block is the constructor.
-var Question = function(question_string, correct_choice, wrong_choices) {
-  // Private fields for an instance of a Question object.
-  this.question_string = question_string;
-  this.choices = [];
-  this.user_choice_index = null; // Index of the user's choice selection
+var Question = function(question_string, correct_choices, wrong_choices) {
+	  // Private fields for an instance of a Question object.
+	  this.question_string = question_string;
+	  this.choices = [];
+	  this.user_choice_index = null; // Index of the user's choice selection
+	  
+	  // Random assign the correct choice an index
+		var number_of_choices = wrong_choices.length + correct_choices.length;
+		
+	  this.correct_choice_indexes = [];
   
-  // Random assign the correct choice an index
-  this.correct_choice_index = Math.floor(Math.random() * wrong_choices.length + 1);
-  
-  // Fill in this.choices with the choices
-  var number_of_choices = wrong_choices.length + 1;
-  for (var i = 0; i < number_of_choices; i++) {
-    if (i === this.correct_choice_index) {
-      this.choices[i] = correct_choice;
-    } else {
-      // Randomly pick a wrong choice to put in this index
-      var wrong_choice_index = Math.floor(Math.random(0, wrong_choices.length));
-      this.choices[i] = wrong_choices[wrong_choice_index];
-      
-      // Remove the wrong choice from the wrong choice array so that we don't pick it again
-      wrong_choices.splice(wrong_choice_index, 1);
-    }
-  }
+	while(this.correct_choice_indexes.length < correct_choices.length){
+		var randomnumber = Math.floor(Math.random()*number_of_choices);
+		if(this.correct_choice_indexes.indexOf(randomnumber) > -1) continue;
+		this.correct_choice_indexes[this.correct_choice_indexes.length] = randomnumber;
+	}
+	  
+	shuffleArray(correct_choices);
+	shuffleArray(wrong_choices);
+	  
+	  // Fill in this.choices with the choices
+	for (var i = 0; i < number_of_choices; i++) {
+		if (this.correct_choice_indexes.includes(i)) {
+		    this.choices[i] = correct_choices[0];
+			correct_choices.splice(0, 1);
+		} else {
+		  // Randomly pick a wrong choice to put in this index
+		    this.choices[i] = wrong_choices[0];
+		  
+		  // Remove the wrong choice from the wrong choice array so that we don't pick it again
+		    wrong_choices.splice(0, 1);
+		}
+	}
 }
 
 // A function that you can enact on an instance of a question object. This function is called render() and takes in a variable called the container, which is the <div> that I will render the question in. This question will "return" with the score when the question has been answered.
@@ -151,22 +162,21 @@ Question.prototype.render = function(container) {
   }
   question_string_h2.text(this.question_string);
   
-  // Clear any radio buttons and create new ones
-  if (container.children('input[type=radio]').length > 0) {
-    container.children('input[type=radio]').each(function() {
-      var radio_button_id = $(this).attr('id');
+  // Clear any checkbox buttons and create new ones
+  if (container.children('input[type=checkbox]').length > 0) {
+    container.children('input[type=checkbox]').each(function() {
+      var checkbox_button_id = $(this).attr('id');
       $(this).remove();
-      container.children('label[for=' + radio_button_id + ']').remove();
+      container.children('label[for=' + checkbox_button_id + ']').remove();
     });
   }
   for (var i = 0; i < this.choices.length; i++) {
-    // Create the radio button
-    var choice_radio_button = $('<input>')
+    // Create the checkbox button
+    var choice_checkbox_button = $('<input>')
       .attr('id', 'choices-' + i)
-      .attr('type', 'radio')
+      .attr('type', 'checkbox')
       .attr('name', 'choices')
-      .attr('value', 'choices-' + i)
-      .attr('checked', i === this.user_choice_index)
+      .attr('value', i)
       .appendTo(container);
     
     // Create the label
@@ -176,12 +186,13 @@ Question.prototype.render = function(container) {
       .appendTo(container);
   }
   
-  // Add a listener for the radio button to change which one the user has clicked on
+  // Add a listener for the checkbox button to change which one the user has clicked on
   $('input[name=choices]').change(function(index) {
-    var selected_radio_button_value = $('input[name=choices]:checked').val();
+    var selected_checkbox_button_values = $('input[name=choices]:checked');
+	console.log();
     
     // Change the user choice index
-    self.user_choice_index = parseInt(selected_radio_button_value.substr(selected_radio_button_value.length - 1, 1));
+    self.user_choice_index = selected_checkbox_button_values.toArray().map(sel => sel.value)
     
     // Trigger a user-select-change
     container.trigger('user-select-change');
@@ -192,7 +203,8 @@ function endFun() {
 	var xhr = new XMLHttpRequest();
 	xhr.open('POST', '/game/end', true);
 	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	xhr.send(JSON.stringify({result: 0.57, group: "1", nick: "john", age: 5}));
+	console.log({result: percentage, group: group, nick: nick, age: age});
+	xhr.send(JSON.stringify({result: percentage, group: group, nick: nick, age: age}));
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == XMLHttpRequest.DONE) {
 			<!--window.alert(xhr.responseText);-->
@@ -201,8 +213,18 @@ function endFun() {
 	}
 }
 
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
 // "Main method" which will create all the objects and render the Quiz.
 $(document).ready(function() {
+	age = Math.random()*30;
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', '/quiz/config', true);
 	xhr.onreadystatechange = function() {
@@ -214,19 +236,27 @@ $(document).ready(function() {
 	}
 	xhr.send(null);
 	
-  // Create an instance of the Quiz object
-  var quiz = new Quiz('');
+	console.log(age);
+	
+	// Create an instance of the Quiz object
+	var quiz = new Quiz('');
   
-  // Create Question objects from all_questions and add them to the Quiz object
-  for (var i = 0; i < all_questions.length; i++) {
-    // Create a new Question object
-    var question = new Question(all_questions[i].question_string, all_questions[i].choices.correct, all_questions[i].choices.wrong);
-    
-    // Add the question to the instance of the Quiz object that we created previously
-    quiz.add_question(question);
-  }
+	all_questions = all_questions.filter( function(question) {
+		return age >= question.age[0] && age <= question.age[1];
+	});
   
-  // Render the quiz
-  var quiz_container = $('#quiz');
-  quiz.render(quiz_container);
+	shuffleArray(all_questions)
+
+	// Create Question objects from all_questions and add them to the Quiz object
+	for (var i = 0; i < 2; i++) {
+		// Create a new Question object
+		var question = new Question(all_questions[i].question_string, all_questions[i].choices.correct, all_questions[i].choices.wrong);
+
+		// Add the question to the instance of the Quiz object that we created previously
+		quiz.add_question(question);
+	}
+
+	// Render the quiz
+	var quiz_container = $('#quiz');
+	quiz.render(quiz_container);
 });
