@@ -1,3 +1,15 @@
 {
-	"name": "arkanoid"
+	"name": "arkanoid",
+	"config": [
+		{
+			"name": "lives",
+			"default": 1,
+			"required": true
+		},
+		{
+			"name": "time",
+			"default": 45,
+			"required": true
+		}
+	]
 }

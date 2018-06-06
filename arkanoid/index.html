@@ -12,15 +12,18 @@
   <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" href="css/style.css">
-		<link rel="stylesheet" href="css/arkanoid/css/style.css">
+		<link rel="stylesheet" href="./css/style.css">
 	</head>
     <body>
-		<div id="instruction">Steruj paletką przytrzymując palec i przesuwając ją na boki. Zbij wszystkie bloczki odbijając piłkę od paletki żeby wygrać. Jeśli czas minie przegrasz.</div>
+		<div id="end">
+			<h2 id="text"></h2>
+			<br/>
+			<button onclick="this.disabled=true; endFun();">Dalej</button>
+		</div>
+		<div id="instruction">Przesuwaj paletkę na boki by odbijać piłkę i zbij wszystkie bloczki.</div>
 		<canvas id="canvas" width="400" height="400">Your browser doesn't support HTML5</canvas>
-		<div id="out"></div>
-		<script  src="js/index.js"></script>
-		<script  src="js/arkanoid/js/index.js"></script>
+		<h2 id="status"></h2>
+		<script src="./js/index.js"></script>
     </body>
 
 </html>

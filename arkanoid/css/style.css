@@ -2,6 +2,7 @@ body{
 	background-color: white;
 	margin: 0px;
 }
+
 #canvas{
 	background-color: white;
 	padding-left: 0;
@@ -15,7 +16,36 @@ body{
 }
 
 #instruction{
-	margin: 20px 5px 20px 5px;
-	font-size: 26px;
+	padding: 20px 5px 20px 5px;
+	font-size: 50px;
 	text-align: center;
+	background-color: #EEEEEE;
+}
+
+#status{
+	padding: 20px 5px 20px 5px;
+	font-size: 36px;
+	text-align: center;
+}
+
+#end{
+	font-size: 48px;
+	text-align: center;
+	background-color: #DDFFDD;
+	position:fixed;
+    padding:0;
+    margin:0;
+
+    top:20%;
+    left:10%;
+
+    width: 80%;
+    height: 60%;
+}
+
+button{
+	font-size: 50px;
+	padding: 25px;
+	background-color: #5588FF;
+	
 }

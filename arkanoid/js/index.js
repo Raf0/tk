@@ -1,12 +1,20 @@
 var canvas = document.getElementById("canvas");
 var c = canvas.getContext("2d");
-var out = document.getElementById("out");
+var end = document.getElementById("end");
+var endText = document.getElementById("text");
+var statusText = document.getElementById("status");
+end.style.display = 'none';
 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
 var xhr = new XMLHttpRequest();
 var age, nick, group, number;
+var lives, time;
 var points = 0;
+var date = new Date();
+var begin = date.getTime();
 age = Math.random()*30;
+lives = 2;
+time = 45;
 xhr.open('GET', '/arkanoid/config', true);
 xhr.onreadystatechange = function() {
 	if (xhr.readyState == XMLHttpRequest.DONE) {
@@ -16,6 +24,10 @@ xhr.onreadystatechange = function() {
 		group = obj['group'];
 		nick = obj['nick'];
 		age = obj['age'];
+		if(typeof obj['lives'] !== "undefined")
+			lives = obj['lives'];
+		if(typeof obj['time'] !== "undefined")
+			time = obj['time'];
 	}
 }
 
@@ -60,7 +72,7 @@ function Ball(x,y,r,speed,color){
 	this.r = r;
 	this.speed = speed;
 	this.dx = Math.random() - 0.5;
-	this.dy = speed;
+	this.dy = speed/2;
 	this.color = color;
 }
 
@@ -89,16 +101,24 @@ function start(){
 	renderBall();
 	renderBricks();
 	checkWinner();
+	var date = new Date();
+	var leftTime = (time-Math.round((date.getTime()-begin)/1000));
+	statusText.innerText = "Życia: "+lives + " Czas: "+leftTime;
+	if(leftTime <= 0)
+		gameOver = true;
 	if(gameOver === false){
 		requestAnimationFrame(start);
 	} else {
-		out.innerHTML = "Game over";
-		if(winner){
-			out.innerHTML += ", you won!";
-		}
-		out.innerHTML += "<br>";
-		out.innerHTML += "Press R to restart";
-		endFun();
+		end.style.display = 'block';
+		if(winner == 1)
+			points = 1;
+		else
+			points = Math.round(points/number * 75)/100;
+		
+		if(winner)
+			endText.innerText = "Wygrałeś!\nOtrzymujesz 1 punkt.";
+		else
+			endText.innerText = "Przegrałeś!\nOtrzymujesz "+points+" punktów.";
 	}
 		
 }
@@ -154,25 +174,34 @@ function checkBall_BoundsCollision(){
 		ball.y = 0 + ball.r;
 		ball.dy = -ball.dy
 	} else if(ball.y + ball.r > canvas.height){
-		gameOver = true;
-		winner = false;
+		lives--;
+		if(lives == 0)
+		{
+			gameOver = true;
+			winner = false;
+		}else{
+			delete ball;
+			ball = new Ball(200,200,5,speed,"red");
+		}
 	}
 }
 
 function checkBall_PlayerCollision(){
-	var ax1 = player.x;
-	var ay1 = player.y;
-	var ax2 = player.x+player.width;
-	var ay2 = player.y+player.height;
-	var ax = (ax1 + ax2) / 2;
-	var ay = (ay1 + ay2) / 2;
-	var bx1 = ball.x-ball.r;
-	var by1 = ball.y-ball.r;
-	var bx2 = ball.x+ball.r;
-	var by2 = ball.y+ball.r;
-	if(ax2 > bx1 && ax1 < bx2 && ay1 < by2 && ay > by2){
-		ball.dx = 8 * ((ball.x-(ax))/player.width)
-		ball.dy = -Math.sqrt(ball.speed*ball.speed - ball.dx*ball.dx)
+	var p_x1 = player.x;
+	var p_y1 = player.y;
+	var p_x2 = player.x+player.width;
+	var p_y2 = player.y+player.height;
+	var p_x = (p_x1 + p_x2) / 2;
+	var p_y = (p_y1 + p_y2) / 2;
+	var b_x1 = ball.x-ball.r;
+	var b_y1 = ball.y-ball.r;
+	var b_x2 = ball.x+ball.r;
+	var b_y2 = ball.y+ball.r;
+	if(p_x2 >= b_x1 && p_x1 <= b_x2 && p_y1 <= b_y2 && p_y2 >= b_y2){
+		ball.dx = ball.speed * 1.5 * ((ball.x-(p_x))/player.width)
+		ball.dy = -Math.sqrt(ball.speed*ball.speed - (ball.dx*ball.dx))
+		if(b_y2 > p_y)
+			ball.dy = - ball.dy;
 	}
 }
 
@@ -285,7 +314,7 @@ function checkWinner(){
 }
 
 function restart(){
-	out.innerHTML = "";
+	end.innerHTML = "";
 	gameOver = false;
 	loadMap();
 	ball = new Ball(200,200,5,Math.floor(Math.random()*4+4),Math.floor(Math.random()*4+4),"red");
@@ -317,14 +346,9 @@ function renderBricks(){
 
 function endFun() {
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', '/game/end', true);
+	xhr.open('POST', '/arkanoid/end', true);
 	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	if(winner == 1)
-		result = 1;
-	else
-		result = points/number * 0.75;
-	console.log({result: result, group: group, nick: nick, age: age})
-	xhr.send(JSON.stringify({result: result, group: group, nick: nick, age: age}));
+	xhr.send(JSON.stringify({result: points, group: group, nick: nick, age: age}));
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == XMLHttpRequest.DONE) {
 			<!--window.alert(xhr.responseText);-->

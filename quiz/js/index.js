@@ -1,5 +1,6 @@
 // Array of all the questions and choices to populate the questions. This might be saved in some JSON file or a database and we would have to read the data in.
-var age, nick, group, number, percentage;
+var age, nick, group, number, percentage, numberOfQuestions, timeForQuestion;
+var begin;
 // An object for a Quiz, which will contain Question objects.
 var Quiz = function(quiz_name) {
   // Private fields for an instance of a Quiz object.
@@ -33,8 +34,6 @@ Quiz.prototype.render = function(container) {
   // Helper function for changing the question and updating the buttons
   function change_question() {
     self.questions[current_question_index].render(question_container);
-    $('#prev-question-button').prop('disabled', current_question_index === 0);
-    $('#next-question-button').prop('disabled', current_question_index === self.questions.length - 1);
     
     // Determine if all questions have been answered
     var all_questions_answered = true;
@@ -44,7 +43,6 @@ Quiz.prototype.render = function(container) {
         break;
       }
     }
-    $('#submit-button').prop('disabled', !all_questions_answered);
   }
   
   // Render the first question
@@ -61,43 +59,42 @@ Quiz.prototype.render = function(container) {
   
   // Add listener for the next question button
   $('#next-question-button').click(function() {
+	  var date = new Date();
+	  begin = date.getTime();
     if (current_question_index < self.questions.length - 1) {
       current_question_index++;
       change_question();
-    }
+    }else{
+		submit();
+	}
   });
   
-  // Add listener for the submit answers button
-  $('#submit-button').click(function() {
+  function submit() {
     // Determine how many questions the user got right
     var score = 0;
     for (var i = 0; i < self.questions.length; i++) {
-		console.log(self.questions[i].user_choice_index);
       if (self.questions[i].user_choice_index.sort().toString() === self.questions[i].correct_choice_indexes.sort().toString()) {
-		 
         score++;
       }
     }
     
     // Display the score with the appropriate message
-    percentage = score / self.questions.length;
+    percentage = Math.round(score / self.questions.length * 100)/100;
     var message;
     if (percentage === 1) {
-      message = 'Great job!'
-    } else if (percentage >= .75) {
-      message = 'You did alright.'
-    } else if (percentage >= .5) {
-      message = 'Better luck next time.'
+      message = 'Wszystkie odpowiedzi prawidłowe!'
+    } else if (percentage > 0.7) {
+      message = 'Większosć odpowiedzi prawidłowa.'
+    } else if (percentage > 0) {
+      message = 'Część odpowiedzi prawidłowa.'
     } else {
-      message = 'Maybe you should try a little harder.'
+      message = 'Żadna z odpowiedzi nie była prawidłowa.'
     }
     $('#quiz-results-message').text(message);
-    $('#quiz-results-score').html('You got <b>' + score + '/' + self.questions.length + '</b> questions correct.');
+    $('#quiz-results-score').html('Odpowiedziałeś poprawnie na ' + score + '/' + self.questions.length + ' odpowiedzi.\nOtrzymujesz '+percentage+" punktów.");
     $('#quiz-results').slideDown();
-    $('#quiz button').slideUp();
-	
-	endFun();
-  });
+    $('#next-question-button').slideUp();
+  };
   
   // Add a listener on the questions container to listen for user select changes. This is for determining whether we can submit answers or not.
   question_container.bind('user-select-change', function() {
@@ -108,7 +105,6 @@ Quiz.prototype.render = function(container) {
         break;
       }
     }
-    $('#submit-button').prop('disabled', !all_questions_answered);
   });
 }
 
@@ -117,7 +113,7 @@ var Question = function(question_string, correct_choices, wrong_choices) {
 	  // Private fields for an instance of a Question object.
 	  this.question_string = question_string;
 	  this.choices = [];
-	  this.user_choice_index = null; // Index of the user's choice selection
+	  this.user_choice_index = []; // Index of the user's choice selection
 	  
 	  // Random assign the correct choice an index
 		var number_of_choices = wrong_choices.length + correct_choices.length;
@@ -189,7 +185,6 @@ Question.prototype.render = function(container) {
   // Add a listener for the checkbox button to change which one the user has clicked on
   $('input[name=choices]').change(function(index) {
     var selected_checkbox_button_values = $('input[name=choices]:checked');
-	console.log();
     
     // Change the user choice index
     self.user_choice_index = selected_checkbox_button_values.toArray().map(sel => sel.value)
@@ -201,7 +196,7 @@ Question.prototype.render = function(container) {
 
 function endFun() {
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', '/game/end', true);
+	xhr.open('POST', '/quiz/end', true);
 	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 	console.log({result: percentage, group: group, nick: nick, age: age});
 	xhr.send(JSON.stringify({result: percentage, group: group, nick: nick, age: age}));
@@ -222,9 +217,23 @@ function shuffleArray(array) {
     }
 }
 
+function checkTime(){
+	var date = new Date();
+	var leftTime = (timeForQuestion-Math.round((date.getTime()-begin)/1000));
+	$('#time').text("Czas:" +leftTime);
+	if(leftTime <=0)
+	{
+		$('#next-question-button').click();
+	}
+}
+
 // "Main method" which will create all the objects and render the Quiz.
 $(document).ready(function() {
 	age = Math.random()*30;
+	var date = new Date();
+	begin = date.getTime();
+	numberOfQuestions = 3;
+	timeForQuestion = 15;
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', '/quiz/config', true);
 	xhr.onreadystatechange = function() {
@@ -232,25 +241,35 @@ $(document).ready(function() {
 			var json = xhr.responseText;
 			obj = JSON.parse(json);
 			console.log(obj)
+			group = obj['group'];
+			nick = obj['nick'];
+			age = obj['age'];
+			if(typeof obj['numberOfQuestions'] !== "undefined")
+				numberOfQuestions = obj['numberOfQuestions'] ;
+			if(typeof obj['timeForQuestion'] !== "undefined")
+				timeForQuestion = obj['timeForQuestion'];
 		}
 	}
 	xhr.send(null);
-	
-	console.log(age);
+		console.log(age);
 	
 	// Create an instance of the Quiz object
 	var quiz = new Quiz('');
   
-	all_questions = all_questions.filter( function(question) {
+	available_questions = all_questions.filter( function(question) {
 		return age >= question.age[0] && age <= question.age[1];
 	});
   
+	shuffleArray(available_questions)
 	shuffleArray(all_questions)
 
 	// Create Question objects from all_questions and add them to the Quiz object
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < numberOfQuestions; i++) {
 		// Create a new Question object
-		var question = new Question(all_questions[i].question_string, all_questions[i].choices.correct, all_questions[i].choices.wrong);
+		if(available_questions.length > i)
+			var question = new Question(available_questions[i].question_string, available_questions[i].choices.correct, available_questions[i].choices.wrong);
+		else
+			var question = new Question(all_questions[i].question_string, all_questions[i].choices.correct, all_questions[i].choices.wrong);
 
 		// Add the question to the instance of the Quiz object that we created previously
 		quiz.add_question(question);
@@ -259,4 +278,5 @@ $(document).ready(function() {
 	// Render the quiz
 	var quiz_container = $('#quiz');
 	quiz.render(quiz_container);
+	setInterval(checkTime, 250);
 });

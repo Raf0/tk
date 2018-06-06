@@ -33,13 +33,23 @@ html {
   line-height: 44px;
 }
 
+#time {
+  font-weight: 600;
+  font-size: 40px;
+   margin: 40px 0px 0px 5px;
+   display: inline-block;
+  text-transform: uppercase;
+  text-align: left;
+  line-height: 47px;
+}
+
 #quiz button {
   float: right;
-  margin: 18px 0px 0px 18px;
-  padding: 15px;
+  margin: 20px 0px 0px 5px;
+  padding: 20px 60px 20px 60px;
   background: #9ACFCC;
   color: #00403C;
-  font-size: 34px;
+  font-size: 50px;
   cursor: pointer;
   outline: none;
 }
@@ -74,7 +84,7 @@ html {
 #question label {
   display: inline-block;
   margin: 5px;
-  padding: 25px;
+  padding: 30px;
   font-size: 32px;
   background: #FAE3BB;
   color: #2C1000;
@@ -107,14 +117,14 @@ html {
 #quiz-results-message {
   display: block;
   color: #00403C;
-  font-size: 20px;
+  font-size: 56px;
   font-weight: bold;
 }
 
 #quiz-results-score {
   display: block;
   color: #31706c;
-  font-size: 20px;
+  font-size: 42px;
 }
 
 #quiz-results-score b {
@@ -124,7 +134,8 @@ html {
 }
 
 #instruction{
-	margin: 20px 5px 20px 5px;
-	font-size: 26px;
+	padding: 20px 5px 20px 5px;
+	font-size: 50px;
 	text-align: center;
+	background-color: #EEEEEE;
 }
