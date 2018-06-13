@@ -10,6 +10,11 @@
 			"name": "timeForQuestion",
 			"default": 10,
 			"required": true
+		},
+		{
+			"name": "fileName",
+			"default": "questions",
+			"required": true
 		}
 	]
 }

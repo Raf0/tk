@@ -1,0 +1,34 @@
+[
+	{
+	  "question_string": "Które z tych nazw określają warstwy OSGI?",
+	  "age": [0, 100],
+	  "choices": {
+		"correct": ["Bundles", "Services", "Life-Cycle", "Module", "Security"],
+		"wrong": ["Jar Hell", "Manifest"]
+	  }
+	},
+	{
+	  "question_string": "Co umożliwia Spring?",
+	  "age": [0, 100],
+	  "choices": {
+		"correct": ["Testowania", "Programowania aspektowego", "Odwrócone sterowanie"],
+		"wrong": ["Generowanie kodu", "Refactoring"]
+	  }
+	},
+	{
+	  "question_string": "W którym roku powstał Spring?",
+	  "age": [0, 100],
+	  "choices": {
+		"correct": ["2004"],
+		"wrong": ["2005", "2006", "2007"]
+	  }
+	},
+	{
+	  "question_string": "W jaki sposób można konfigurować beany w springu?",
+	  "age": [0, 100],
+	  "choices": {
+		"correct": ["XML", "Adnotacje"],
+		"wrong": ["JSON", "YAML"]
+	  }
+	}
+]

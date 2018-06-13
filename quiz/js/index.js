@@ -1,5 +1,7 @@
 // Array of all the questions and choices to populate the questions. This might be saved in some JSON file or a database and we would have to read the data in.
-var age, nick, group, number, percentage, numberOfQuestions, timeForQuestion;
+var all_questions;
+
+var age, nick, group, number, percentage, numberOfQuestions, timeForQuestion, fileName;
 var begin;
 // An object for a Quiz, which will contain Question objects.
 var Quiz = function(quiz_name) {
@@ -21,9 +23,6 @@ Quiz.prototype.add_question = function(question) {
 Quiz.prototype.render = function(container) {
   // For when we're out of scope
   var self = this;
-  
-  // Hide the quiz results modal
-  $('#quiz-results').hide();
   
   // Write the name of the quiz
   $('#quiz-name').text(this.quiz_name);
@@ -80,20 +79,8 @@ Quiz.prototype.render = function(container) {
     
     // Display the score with the appropriate message
     percentage = Math.round(score / self.questions.length * 100)/100;
-    var message;
-    if (percentage === 1) {
-      message = 'Wszystkie odpowiedzi prawidłowe!'
-    } else if (percentage > 0.7) {
-      message = 'Większosć odpowiedzi prawidłowa.'
-    } else if (percentage > 0) {
-      message = 'Część odpowiedzi prawidłowa.'
-    } else {
-      message = 'Żadna z odpowiedzi nie była prawidłowa.'
-    }
-    $('#quiz-results-message').text(message);
-    $('#quiz-results-score').html('Odpowiedziałeś poprawnie na ' + score + '/' + self.questions.length + ' odpowiedzi.\nOtrzymujesz '+percentage+" punktów.");
-    $('#quiz-results').slideDown();
     $('#next-question-button').slideUp();
+	endFun();
   };
   
   // Add a listener on the questions container to listen for user select changes. This is for determining whether we can submit answers or not.
@@ -227,32 +214,7 @@ function checkTime(){
 	}
 }
 
-// "Main method" which will create all the objects and render the Quiz.
-$(document).ready(function() {
-	age = Math.random()*30;
-	var date = new Date();
-	begin = date.getTime();
-	numberOfQuestions = 3;
-	timeForQuestion = 15;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', '/quiz/config', true);
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState == XMLHttpRequest.DONE) {
-			var json = xhr.responseText;
-			obj = JSON.parse(json);
-			console.log(obj)
-			group = obj['group'];
-			nick = obj['nick'];
-			age = obj['age'];
-			if(typeof obj['numberOfQuestions'] !== "undefined")
-				numberOfQuestions = obj['numberOfQuestions'] ;
-			if(typeof obj['timeForQuestion'] !== "undefined")
-				timeForQuestion = obj['timeForQuestion'];
-		}
-	}
-	xhr.send(null);
-		console.log(age);
-	
+function start(){
 	// Create an instance of the Quiz object
 	var quiz = new Quiz('');
   
@@ -279,4 +241,54 @@ $(document).ready(function() {
 	var quiz_container = $('#quiz');
 	quiz.render(quiz_container);
 	setInterval(checkTime, 250);
+}
+
+// "Main method" which will create all the objects and render the Quiz.
+$(document).ready(function() {
+	age = Math.random()*30;
+	var date = new Date();
+	begin = date.getTime();
+	numberOfQuestions = 3;
+	timeForQuestion = 15;
+	fileName = "questions";
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', '/quiz/config', true);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == XMLHttpRequest.DONE) {
+			if(xhr.status == "200"){
+				var json = xhr.responseText;
+				obj = JSON.parse(json);
+				console.log(obj)
+				group = obj['group'];
+				nick = obj['nick'];
+				age = obj['age'];
+				
+				if(typeof obj['numberOfQuestions'] !== "undefined")
+					numberOfQuestions = obj['numberOfQuestions'] ;
+				if(typeof obj['timeForQuestion'] !== "undefined")
+					timeForQuestion = obj['timeForQuestion'];
+				if(typeof obj['fileName'] !== "undefined")
+					fileName = obj['fileName']
+			}
+			console.log(age);
+	
+			var rawFile = new XMLHttpRequest();
+			rawFile.overrideMimeType("application/json");
+			rawFile.open("GET", "./js/"+fileName+".json", true);
+			rawFile.onreadystatechange = function() {
+				if (rawFile.readyState == XMLHttpRequest.DONE) {
+					if(rawFile.status == "200")
+					{
+						var text = rawFile.responseText;
+						all_questions = JSON.parse(text);
+					}
+					start();
+				}
+				
+			}
+			rawFile.send(null);
+		}
+	}
+	xhr.send(null);
+	
 });

@@ -1,10 +1,8 @@
 var canvas = document.getElementById("canvas");
 var c = canvas.getContext("2d");
-var end = document.getElementById("end");
-var endText = document.getElementById("text");
 var statusText = document.getElementById("status");
-end.style.display = 'none';
 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+var player, speed, ball, bricks, touchPosition, gameOver, winner;
 
 var xhr = new XMLHttpRequest();
 var age, nick, group, number;
@@ -18,37 +16,38 @@ time = 45;
 xhr.open('GET', '/arkanoid/config', true);
 xhr.onreadystatechange = function() {
 	if (xhr.readyState == XMLHttpRequest.DONE) {
-		var json = xhr.responseText;
-		obj = JSON.parse(json);
-		console.log(obj)
-		group = obj['group'];
-		nick = obj['nick'];
-		age = obj['age'];
-		if(typeof obj['lives'] !== "undefined")
-			lives = obj['lives'];
-		if(typeof obj['time'] !== "undefined")
-			time = obj['time'];
+		if(xhr.status == "200"){
+			var json = xhr.responseText;
+			obj = JSON.parse(json);
+			console.log(obj)
+			group = obj['group'];
+			nick = obj['nick'];
+			age = obj['age'];
+			if(typeof obj['lives'] !== "undefined")
+				lives = obj['lives'];
+			if(typeof obj['time'] !== "undefined")
+				time = obj['time'];
+		}
+		window.addEventListener("touchstart", handleTouch, false);
+		window.addEventListener("touchmove", handleTouch, false);
+		window.addEventListener("touchend", handleEnd, false);
+
+
+		player = new Player(160,380,80,25);
+		speed = Math.max(Math.min(5.25, age/4), 1.25) +2;
+
+		ball = new Ball(200,200,5,speed,"red");
+		bricks;
+		touchPosition = -1;
+		gameOver = false;
+		winner = false;
+
+		loadMap();
+		start();
 	}
 }
-
-
-window.addEventListener("touchstart", handleTouch, false);
-window.addEventListener("touchmove", handleTouch, false);
-window.addEventListener("touchend", handleEnd, false);
-
-
-var player = new Player(160,380,80,25);
-var speed = Math.max(Math.min(5.25, age/4), 1.25) +2;
-
-var ball = new Ball(200,200,5,speed,"red");
-var bricks;
-var touchPosition = -1;
-var gameOver = false;
-var winner = false;
-
 xhr.send(null);
-loadMap();
-start();
+
 
 function handleTouch(evt) {
 	touchPosition = (evt.changedTouches[0].pageX/window.innerWidth)*400;
@@ -109,16 +108,12 @@ function start(){
 	if(gameOver === false){
 		requestAnimationFrame(start);
 	} else {
-		end.style.display = 'block';
 		if(winner == 1)
 			points = 1;
 		else
 			points = Math.round(points/number * 75)/100;
 		
-		if(winner)
-			endText.innerText = "Wygrałeś!\nOtrzymujesz 1 punkt.";
-		else
-			endText.innerText = "Przegrałeś!\nOtrzymujesz "+points+" punktów.";
+		endFun();
 	}
 		
 }
@@ -314,7 +309,6 @@ function checkWinner(){
 }
 
 function restart(){
-	end.innerHTML = "";
 	gameOver = false;
 	loadMap();
 	ball = new Ball(200,200,5,Math.floor(Math.random()*4+4),Math.floor(Math.random()*4+4),"red");
