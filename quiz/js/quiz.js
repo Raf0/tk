@@ -262,13 +262,15 @@ $(document).ready(function() {
 				group = obj['group'];
 				nick = obj['nick'];
 				age = obj['age'];
-				
-				if(typeof obj['numberOfQuestions'] !== "undefined")
-					numberOfQuestions = obj['numberOfQuestions'] ;
-				if(typeof obj['timeForQuestion'] !== "undefined")
-					timeForQuestion = obj['timeForQuestion'];
-				if(typeof obj['fileName'] !== "undefined")
-					fileName = obj['fileName']
+				var config = obj['config'];
+				config.forEach(parameter =>{
+					if(parameter.name == 'numberOfQuestions')
+						numberOfQuestions = parameter.value;
+					else if(parameter.name == 'timeForQuestion')
+						timeForQuestion = parameter.value;
+					else if(parameter.name == 'fileName')
+						fileName = parameter.value;
+				});
 			}
 			console.log(age);
 	

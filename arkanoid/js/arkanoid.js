@@ -23,10 +23,13 @@ xhr.onreadystatechange = function() {
 			group = obj['group'];
 			nick = obj['nick'];
 			age = obj['age'];
-			if(typeof obj['lives'] !== "undefined")
-				lives = obj['lives'];
-			if(typeof obj['time'] !== "undefined")
-				time = obj['time'];
+			var config = obj['config'];
+			config.forEach(parameter =>{
+				if(parameter.name == 'lives')
+					lives = parameter.value;
+				else if(parameter.name == 'time')
+					time = parameter.value;
+			});
 		}
 		window.addEventListener("touchstart", handleTouch, false);
 		window.addEventListener("touchmove", handleTouch, false);

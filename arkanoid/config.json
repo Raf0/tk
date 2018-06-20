@@ -3,12 +3,12 @@
 	"config": [
 		{
 			"name": "lives",
-			"default": 1,
+			"value": 1,
 			"required": true
 		},
 		{
 			"name": "time",
-			"default": 45,
+			"value": 45,
 			"required": true
 		}
 	]

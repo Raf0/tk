@@ -3,17 +3,17 @@
 	"config": [
 		{
 			"name": "numberOfQuestions",
-			"default": 4,
+			"value": 4,
 			"required": true
 		},
 		{
 			"name": "timeForQuestion",
-			"default": 10,
+			"value": 10,
 			"required": true
 		},
 		{
 			"name": "fileName",
-			"default": "questions",
+			"value": "questions",
 			"required": true
 		}
 	]
